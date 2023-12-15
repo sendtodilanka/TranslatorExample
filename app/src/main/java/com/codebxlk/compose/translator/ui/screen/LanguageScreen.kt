@@ -23,7 +23,6 @@ import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.FileDownload
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,7 +33,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -93,31 +91,22 @@ fun LanguageScreen(
     selectedType: String
 ) {
     val context = LocalContext.current
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
+    val viewModel = languageViewModel(selectedType)
     val isFromSource = selectedType == SelectedType.SOURCE.name
-    val viewModel: LanguageViewModel = languageViewModel(selectedType)
     val screenTitle = "Translate ${if (isFromSource) "from" else "to"}"
 
-    val sourceLanguage by viewModel.run { sourceLanguage.collectAsState(defaultSource) }
-    //Timber.d("sourceLanguage: ${sourceLanguage.languageName}")
-
-    val targetLanguage by viewModel.run { targetLanguage.collectAsState(defaultTarget) }
-    //Timber.d("targetLanguage: ${targetLanguage.languageName}")
-
     val languageList = viewModel.languageList.collectAsLazyPagingItems()
-    //Timber.d("languageList count: ${languageList.itemCount}")
+    val sourceLanguage by viewModel.run { sourceLanguage.collectAsState(defaultSource) }
+    val targetLanguage by viewModel.run { targetLanguage.collectAsState(defaultTarget) }
 
     var index by rememberSaveable { mutableIntStateOf(0) }
-    val lazyListState = rememberLazyListState()
-
-    LaunchedEffect(lazyListState) {
-        lazyListState.scrollToItem(index)
-    }
+    val lazyListState: LazyListState = rememberLazyListState()
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     var openAutoDialog by rememberSaveable { mutableStateOf(false) }
-    var openLDDialog by rememberSaveable { mutableStateOf(false) }
-    var openLRDialog by rememberSaveable { mutableStateOf(false) }
+    var openDownloadDialog by rememberSaveable { mutableStateOf(false) }
+    var openLRemoveDialog by rememberSaveable { mutableStateOf(false) }
 
     var languageId by rememberSaveable { mutableStateOf("") }
     var languageName by rememberSaveable { mutableStateOf("") }
@@ -164,16 +153,13 @@ fun LanguageScreen(
                 )
             },
             onItemActionClick = {
-                index = lazyListState.firstVisibleItemIndex
-                Timber.e("index: $index")
-
                 languageId = it.languageId
                 languageName = it.languageName
 
                 when (it.languageState) {
                     NONE, AUTO, DOWNLOADING -> {}
-                    SUPPORTED -> openLDDialog = true
-                    DOWNLOADED -> openLRDialog = true
+                    SUPPORTED -> openDownloadDialog = true
+                    DOWNLOADED -> openLRemoveDialog = true
                 }
             }
         )
@@ -189,7 +175,7 @@ fun LanguageScreen(
         )
     }
 
-    if (openLDDialog) {
+    if (openDownloadDialog) {
         AlertDialog(
             icon = Icons.Rounded.FileDownload,
             dialogTitle = "Download $languageName",
@@ -198,7 +184,7 @@ fun LanguageScreen(
             negativeBtnText = "Cancel",
             onPositiveClick = {
                 Timber.d("$languageName language model download started.")
-                openLDDialog = false
+                openDownloadDialog = false
 
                 viewModel.downloadLanguage(
                     languageId = languageId,
@@ -217,11 +203,11 @@ fun LanguageScreen(
                     }
                 )
             },
-            onDismissRequest = { openLDDialog = false }
+            onDismissRequest = { openDownloadDialog = false }
         )
     }
 
-    if (openLRDialog) {
+    if (openLRemoveDialog) {
         AlertDialog(
             icon = Icons.Rounded.DeleteOutline,
             dialogTitle = "Delete $languageName",
@@ -230,7 +216,7 @@ fun LanguageScreen(
             negativeBtnText = "Cancel",
             onPositiveClick = {
                 Timber.d("$languageName language model removed started.")
-                openLRDialog = false
+                openLRemoveDialog = false
 
                 viewModel.deleteLanguage(
                     languageId = languageId,
@@ -248,7 +234,7 @@ fun LanguageScreen(
                     }
                 )
             },
-            onDismissRequest = { openLRDialog = false }
+            onDismissRequest = { openLRemoveDialog = false }
         )
     }
 }
@@ -296,8 +282,6 @@ fun LanguageItemList(
             contentType = languageList.itemContentType()
         ) { index ->
             when (val item = languageList[index]) {
-                is ItemLanguageAdapter.Divider -> Divider(Modifier.padding(bottom = 16.dp))
-
                 is ItemLanguageAdapter.Item -> LanguageItem(
                     title = item.language.languageName,
                     sourceLanguageName = sourceLanguageName,

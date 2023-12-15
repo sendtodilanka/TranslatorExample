@@ -6,6 +6,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.codebxlk.compose.translator.data.model.SelectedType
+import com.codebxlk.compose.translator.data.model.SelectedType.SOURCE
 import com.codebxlk.compose.translator.ui.screen.HomeScreen
 import com.codebxlk.compose.translator.ui.screen.LanguageScreen
 
@@ -23,12 +25,8 @@ fun SetupNavGraph(
             route = "${Screen.Language.route}/{selectedType}",
             arguments = listOf(navArgument("selectedType") { type = NavType.StringType })
         ) {
-            it.arguments?.getString("selectedType")?.let { selectedType ->
-                LanguageScreen(
-                    navController = navController,
-                    selectedType = selectedType
-                )
-            }
+            val selectedType = it.arguments?.getString("selectedType") ?: SOURCE.name
+            LanguageScreen(navController, selectedType)
         }
     }
 }

@@ -13,7 +13,6 @@ import com.codebxlk.compose.translator.data.DataStoreManager
 import com.codebxlk.compose.translator.data.DataStoreManager.Companion.sourceKey
 import com.codebxlk.compose.translator.data.DataStoreManager.Companion.targetKey
 import com.codebxlk.compose.translator.data.model.ItemLanguageAdapter
-import com.codebxlk.compose.translator.data.model.ItemLanguageAdapter.Divider
 import com.codebxlk.compose.translator.data.model.ItemLanguageAdapter.Item
 import com.codebxlk.compose.translator.data.model.Language
 import com.codebxlk.compose.translator.data.model.LanguageState
@@ -27,9 +26,6 @@ import com.google.android.gms.tasks.OnSuccessListener
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import dagger.hilt.EntryPoint
-import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ActivityComponent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -99,15 +95,12 @@ class LanguageViewModel @AssistedInject constructor(
         return repository.findLanguagesWithRecent().mapLatest { pagingData ->
             pagingData
                 .let { if (isFromSource) it.insertHeaderItem(item = Item(defaultAuto)) else it }
-                .insertHeaderItem(item = Divider())
             //.addBannerAds(totalAdCount = 2, isPremium = false) { count -> BannerAd(count) }
         }.flowOn(Dispatchers.IO)
     }
 
     private fun findLanguageByName(languageName: String): Flow<PagingData<ItemLanguageAdapter>> {
-        return repository.findLanguageByName(languageName).mapLatest {
-            it.insertHeaderItem(item = Divider())
-        }.flowOn(Dispatchers.IO)
+        return repository.findLanguageByName(languageName).flowOn(Dispatchers.IO)
     }
 
     fun swapLanguage(isFromSource: Boolean, sourceLanguageId: String, targetLanguageId: String) {
@@ -209,11 +202,4 @@ class LanguageViewModel @AssistedInject constructor(
             }
         }
     }
-}
-
-@EntryPoint
-@InstallIn(ActivityComponent::class)
-interface ViewModelFactoryProvider {
-
-    fun languageViewModelFactory(): LanguageViewModel.Factory
 }
