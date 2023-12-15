@@ -91,16 +91,16 @@ class LanguageViewModel @AssistedInject constructor(
         if (it.isNotBlank()) findLanguageByName(it) else findLanguagesWithRecent()
     }.cachedIn(viewModelScope).flowOn(Dispatchers.IO)
 
-    private fun findLanguagesWithRecent(): Flow<PagingData<ItemLanguageAdapter>> {
-        return repository.findLanguagesWithRecent().mapLatest { pagingData ->
-            pagingData
-                .let { if (isFromSource) it.insertHeaderItem(item = Item(defaultAuto)) else it }
-            //.addBannerAds(totalAdCount = 2, isPremium = false) { count -> BannerAd(count) }
-        }.flowOn(Dispatchers.IO)
+    private fun findLanguagesWithRecent(): Flow<PagingData<Language>> {
+        return repository.findLanguagesWithRecent()
+            .cachedIn(viewModelScope)
+            .flowOn(Dispatchers.IO)
     }
 
-    private fun findLanguageByName(languageName: String): Flow<PagingData<ItemLanguageAdapter>> {
-        return repository.findLanguageByName(languageName).flowOn(Dispatchers.IO)
+    private fun findLanguageByName(languageName: String): Flow<PagingData<Language>> {
+        return repository.findLanguageByName(languageName)
+            .cachedIn(viewModelScope)
+            .flowOn(Dispatchers.IO)
     }
 
     fun swapLanguage(isFromSource: Boolean, sourceLanguageId: String, targetLanguageId: String) {

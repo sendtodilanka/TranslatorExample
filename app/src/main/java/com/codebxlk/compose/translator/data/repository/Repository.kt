@@ -18,10 +18,10 @@ interface Repository {
     fun findLanguagesPaged(): Flow<PagingData<Language>>
 
     @WorkerThread
-    fun findLanguagesWithRecent(): Flow<PagingData<ItemLanguageAdapter>>
+    fun findLanguagesWithRecent(): Flow<PagingData<Language>>
 
     @WorkerThread
-    fun findLanguageByName(languageName: String): Flow<PagingData<ItemLanguageAdapter>>
+    fun findLanguageByName(languageName: String): Flow<PagingData<Language>>
 
     @WorkerThread
     suspend fun findLanguageById(languageId: String?): Language?

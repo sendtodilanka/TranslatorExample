@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.codebxlk.compose.translator.ui.screen
 
@@ -264,7 +264,7 @@ fun onLanguageSelect(
 fun LanguageItemList(
     modifier: Modifier = Modifier,
     lazyListState: LazyListState,
-    languageList: LazyPagingItems<ItemLanguageAdapter>,
+    languageList: LazyPagingItems<Language>,
     sourceLanguageName: String,
     onItemClick: (Language) -> Unit,
     onItemActionClick: (Language) -> Unit
@@ -281,26 +281,16 @@ fun LanguageItemList(
             key = languageList.itemKey(),
             contentType = languageList.itemContentType()
         ) { index ->
-            when (val item = languageList[index]) {
-                is ItemLanguageAdapter.Item -> LanguageItem(
-                    title = item.language.languageName,
-                    sourceLanguageName = sourceLanguageName,
-                    languageState = item.language.languageState,
-                    onItemClick = { onItemClick(item.language) },
-                    onItemActionClick = { onItemActionClick(item.language) }
-                )
+            val item = languageList[index] ?: return@items
 
-                is ItemLanguageAdapter.SectionTitle -> ProvideTextStyle(
-                    MaterialTheme.typography.labelLarge.copy(
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                ) { Text(item.title, Modifier.padding(56.dp, 24.dp)) }
-
-                null -> throw IllegalStateException("Encountered a null item at index $index.")
-            }
+            LanguageItem(
+                title = item.languageName,
+                sourceLanguageName = sourceLanguageName,
+                languageState = item.languageState,
+                onItemClick = { onItemClick(item) },
+                onItemActionClick = { onItemActionClick(item) }
+            )
         }
-
     }
 }
 

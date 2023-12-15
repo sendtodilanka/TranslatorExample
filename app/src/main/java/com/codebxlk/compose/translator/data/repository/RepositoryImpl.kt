@@ -37,7 +37,7 @@ class RepositoryImpl @Inject constructor(
 
     private fun PagingData<Language>.processPagingData(
         downloadedModelIds: Set<String>,
-    ): PagingData<ItemLanguageAdapter> {
+    ): PagingData<Language> {
         return map { language ->
             val isOfflineSupported = mlKitClient.offlineLanguages.contains(language.languageId)
             val isModelDownloaded = downloadedModelIds.contains(language.languageId)
@@ -49,7 +49,7 @@ class RepositoryImpl @Inject constructor(
                 else -> NONE
             }
 
-            Item(language.copy(languageState = offlineStatus))
+            language.copy(languageState = offlineStatus)
         }
     }
 
@@ -89,16 +89,16 @@ class RepositoryImpl @Inject constructor(
         }.flow.flowOn(ioDispatchers)
     }
 
-    override fun findLanguagesWithRecent(): Flow<PagingData<ItemLanguageAdapter>> {
+    override fun findLanguagesWithRecent(): Flow<PagingData<Language>> {
         return Pager(config = PagingConfig(pageSize = 15, enablePlaceholders = false)) {
             localClient.findLanguagesWithRecent()
         }.flow.map { pagingData ->
             val downloadedModelIds = mlKitClient.getDownloadedModelIds()
-            pagingData.processPagingData(downloadedModelIds).insertSeparators()
+            pagingData.processPagingData(downloadedModelIds)
         }.flowOn(ioDispatchers)
     }
 
-    override fun findLanguageByName(languageName: String): Flow<PagingData<ItemLanguageAdapter>> {
+    override fun findLanguageByName(languageName: String): Flow<PagingData<Language>> {
         return Pager(config = PagingConfig(pageSize = 15, enablePlaceholders = false)) {
             localClient.findLanguageByNamePaged(languageName)
         }.flow.map { pagingData ->
