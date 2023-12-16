@@ -84,13 +84,13 @@ class RepositoryImpl @Inject constructor(
     }
 
     override fun findLanguagesPaged(): Flow<PagingData<Language>> {
-        return Pager(config = PagingConfig(pageSize = 15, enablePlaceholders = false)) {
+        return Pager(config = PagingConfig(pageSize = 15, enablePlaceholders = true)) {
             localClient.findLanguagesPaged()
         }.flow.flowOn(ioDispatchers)
     }
 
     override fun findLanguagesWithRecent(): Flow<PagingData<Language>> {
-        return Pager(config = PagingConfig(pageSize = 15, enablePlaceholders = false)) {
+        return Pager(config = PagingConfig(pageSize = 15, enablePlaceholders = true)) {
             localClient.findLanguagesWithRecent()
         }.flow.map { pagingData ->
             val downloadedModelIds = mlKitClient.getDownloadedModelIds()
@@ -99,7 +99,7 @@ class RepositoryImpl @Inject constructor(
     }
 
     override fun findLanguageByName(languageName: String): Flow<PagingData<Language>> {
-        return Pager(config = PagingConfig(pageSize = 15, enablePlaceholders = false)) {
+        return Pager(config = PagingConfig(pageSize = 15, enablePlaceholders = true)) {
             localClient.findLanguageByNamePaged(languageName)
         }.flow.map { pagingData ->
             val downloadedModelIds = mlKitClient.getDownloadedModelIds()
